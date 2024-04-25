@@ -31,7 +31,7 @@ internal static class Utilities
 		merger.Close();
 	}
 
-	internal static async Task<byte []> TakeScreenshotImage (string url, string pdfPathScreen)
+	internal static async Task<byte []> TakeScreenshot (string url, string pdfPathScreen)
 	{
 		using (BrowserFetcher browserFetcher = new())
 		{

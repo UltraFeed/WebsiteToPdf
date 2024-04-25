@@ -17,7 +17,7 @@ internal sealed class SystemInfo
 
 	internal static async Task CreateSysInfoPdf (string url, string pdfPathText, string pdfPathScreen)
 	{
-		byte [] imageBytes = await Utilities.TakeScreenshotImage(url, pdfPathScreen).ConfigureAwait(false);
+		byte [] imageBytes = await Utilities.TakeScreenshot(url, pdfPathScreen).ConfigureAwait(false);
 
 		using FileStream fs = new(pdfPathText, FileMode.Create);
 		using PdfWriter writer = new(fs);
