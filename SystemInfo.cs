@@ -1,5 +1,4 @@
 ﻿#pragma warning disable CA1305
-#pragma warning disable CA1416
 #pragma warning disable IDE0058
 
 using System.Management;
@@ -46,7 +45,7 @@ internal sealed class SystemInfo
 		// Старый метод - весь скриншот ужимается до размеров страницы
 		//Image img = new(ImageDataFactory.Create(imageBytes));
 		//img.ScaleToFit(pdf.GetDefaultPageSize().GetWidth(), pdf.GetDefaultPageSize().GetHeight());
-		
+
 		doc.Add(img);
 		doc.Close();
 	}
