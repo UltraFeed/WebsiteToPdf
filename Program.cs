@@ -15,7 +15,7 @@ internal sealed class Program
 		}
 		else
 		{
-			Console.Write("Enter website: ");
+			Console.Write("Enter website: https://");
 			url = Console.ReadLine();
 		}
 
