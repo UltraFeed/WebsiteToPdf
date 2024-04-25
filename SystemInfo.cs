@@ -80,9 +80,9 @@ internal sealed class SystemInfo
 		byte [] ntpData = new byte [48];
 		ntpData [0] = 0x1B; //LeapIndicator = 0 (no warning), VersionNum = 3 (IPv4 only), Mode = 3 (Client Mode)
 
-		System.Net.IPAddress [] addresses = Dns.GetHostEntry(ntpServer).AddressList;
+		IPAddress [] addresses = Dns.GetHostEntry(ntpServer).AddressList;
 		IPEndPoint ipEndPoint = new(addresses [0], 123);
-		Socket socket = new(AddressFamily.InterNetwork, SocketType.Dgram, System.Net.Sockets.ProtocolType.Udp);
+		Socket socket = new(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
 
 		socket.Connect(ipEndPoint);
 		socket.Send(ntpData);
