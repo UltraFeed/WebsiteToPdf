@@ -27,7 +27,7 @@ internal sealed class Program
 
 		Utilities.RemoveFiles([pdfTemp1, pdfTemp2, output]);
 
-		await SystemInfo.CreateSysInfoPdf(url, pdfTemp1, pdfTemp2).ConfigureAwait(false);
+		await SystemInfo.CreatePdfFiles(url, pdfTemp1, pdfTemp2).ConfigureAwait(false);
 
 		Utilities.MergePdfFiles([pdfTemp1, pdfTemp2], output);
 		Utilities.RemoveFiles([pdfTemp2, pdfTemp1]);

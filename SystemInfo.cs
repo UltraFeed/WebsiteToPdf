@@ -1,4 +1,6 @@
 ﻿#pragma warning disable CA1305
+#pragma warning disable CA1812
+#pragma warning disable CA2000
 #pragma warning disable IDE0058
 
 using System.Management;
@@ -11,25 +13,18 @@ using iText.Layout;
 using iText.Layout.Element;
 
 namespace WebsiteToPdf;
-internal sealed class SystemInfo
+internal static class SystemInfo
 {
-
-	internal static async Task CreateSysInfoPdf (string url, string pdfPathText, string pdfPathScreen)
+	internal static async Task CreatePdfFiles (string url, string pdfPathText, string pdfPathScreen)
 	{
 		byte [] imageBytes = await Utilities.TakeScreenshot(url, pdfPathScreen).ConfigureAwait(false);
 
-		using FileStream fs = new(pdfPathText, FileMode.Create);
-		using PdfWriter writer = new(fs);
-		using PdfDocument pdf = new(writer);
+		using PdfDocument pdf = new(new PdfWriter(new FileStream(pdfPathText, FileMode.Create)));
 		using Document doc = new(pdf);
 
-		string osInfo = GetOsInfo();
-		string currentTime = $"Time UTC+0 = {GetNtpTime("pool.ntp.org")}";
-		string ipAddress = await GetExternalIpAddress().ConfigureAwait(false);
-
-		Paragraph osPara = new(osInfo);
-		Paragraph timePara = new(currentTime);
-		Paragraph ipPara = new($"IP Address: {ipAddress}");
+		Paragraph osPara = new(GetOsInfo());
+		Paragraph timePara = new($"Time UTC+0 = {GetNtpTime("pool.ntp.org")}");
+		Paragraph ipPara = new($"IP Address: {await GetExternalIpAddress().ConfigureAwait(false)}");
 		Paragraph infoPara = new($"Program took screenshot of {url}");
 
 		doc.Add(osPara);
@@ -37,13 +32,12 @@ internal sealed class SystemInfo
 		doc.Add(ipPara);
 		doc.Add(infoPara);
 
-		// Новый метод - растягиваем страницу до размеров скриншота
 		Image img = new(ImageDataFactory.Create(imageBytes));
-		PageSize pageSize = new(img.GetImageWidth(), img.GetImageHeight());
-		pdf.SetDefaultPageSize(pageSize);
+
+		// Новый метод - растягиваем страницу до размеров скриншота
+		pdf.SetDefaultPageSize(new(img.GetImageWidth(), img.GetImageHeight()));
 
 		// Старый метод - весь скриншот ужимается до размеров страницы
-		//Image img = new(ImageDataFactory.Create(imageBytes));
 		//img.ScaleToFit(pdf.GetDefaultPageSize().GetWidth(), pdf.GetDefaultPageSize().GetHeight());
 
 		doc.Add(img);
