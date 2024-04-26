@@ -18,18 +18,20 @@ internal static class SystemInfo
 	{
 		byte [] imageBytes = await Utilities.TakeScreenshot(url, pdfPathScreen).ConfigureAwait(false);
 
-		using PdfDocument pdf = new(new PdfWriter(new FileStream(pdfPathText, FileMode.Create)));
+		using PdfDocument pdf = new(new PdfWriter(new FileStream(pdfPathText, FileMode.Create), new WriterProperties().SetPdfVersion(PdfVersion.PDF_2_0).UseSmartMode()));
 		using Document doc = new(pdf);
 
 		Paragraph osPara = new(GetOsInfo());
 		Paragraph timePara = new($"Time UTC+0 = {GetNtpTime("pool.ntp.org")}");
 		Paragraph ipPara = new($"IP Address: {await GetExternalIpAddress().ConfigureAwait(false)}");
-		Paragraph infoPara = new($"Program took screenshot of {url}");
+		Paragraph infoPara = new($"Program took screenshot of https://{WhoisService.ConvertToPunnyCode(url.Remove(0, 8))}");
+		Paragraph whoisPara = new(await WhoisService.SearchInfoAsync(url).ConfigureAwait(false));
 
 		doc.Add(osPara);
 		doc.Add(timePara);
 		doc.Add(ipPara);
 		doc.Add(infoPara);
+		doc.Add(whoisPara);
 
 		Image img = new(ImageDataFactory.Create(imageBytes));
 

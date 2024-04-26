@@ -19,7 +19,8 @@ internal static class Utilities
 	internal static void MergePdfFiles (string [] inputPdfPaths, string outputPdfPath)
 	{
 		using FileStream outputPdfStream = new(outputPdfPath, FileMode.Create);
-		PdfMerger merger = new(new PdfDocument(new PdfWriter(outputPdfStream)));
+		PdfWriter writer = new(outputPdfStream, new WriterProperties().SetPdfVersion(PdfVersion.PDF_2_0).UseSmartMode());
+		PdfMerger merger = new(new PdfDocument(writer));
 
 		foreach (string inputPdfPath in inputPdfPaths)
 		{
