@@ -113,7 +113,7 @@ internal static class WhoisService
 			await tcpClient.ConnectAsync(whoisServer.Trim(), 43).ConfigureAwait(false);
 			using NetworkStream stream = tcpClient.GetStream();
 			using StreamReader sr = new(stream, Encoding.UTF8);
-			byte [] domainQueryBytes = Encoding.ASCII.GetBytes(ConvertToPunnyCode(domainName) + "\n");
+			byte [] domainQueryBytes = Encoding.ASCII.GetBytes(ConvertToPunycode(domainName) + "\n");
 			await stream.WriteAsync(domainQueryBytes).ConfigureAwait(false);
 			StringBuilder result = new();
 
@@ -135,7 +135,7 @@ internal static class WhoisService
 		}
 	}
 
-	internal static string ConvertToPunnyCode (string domainName)
+	internal static string ConvertToPunycode (string domainName)
 	{
 		return domainName.ToLowerInvariant()
 			// Если в названии домена есть нелатинские буквы и это не цифры и не точка и не тире, например, "россия.рф" то сконвертировать имя в XN--H1ALFFA9F.XN--P1AI

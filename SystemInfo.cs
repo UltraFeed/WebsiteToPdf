@@ -24,7 +24,7 @@ internal static class SystemInfo
 		Paragraph osPara = new(GetOsInfo());
 		Paragraph timePara = new($"Time UTC+0 = {GetNtpTime("pool.ntp.org")}");
 		Paragraph ipPara = new($"IP Address: {await GetExternalIpAddress().ConfigureAwait(false)}");
-		Paragraph infoPara = new($"Program took screenshot of https://{WhoisService.ConvertToPunnyCode(url.Remove(0, 8))}");
+		Paragraph infoPara = new($"Program took screenshot of https://{WhoisService.ConvertToPunycode(url.Remove(0, 8))}");
 		Paragraph whoisPara = new(await WhoisService.SearchInfoAsync(url).ConfigureAwait(false));
 
 		doc.Add(osPara);
