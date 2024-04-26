@@ -7,7 +7,6 @@ using System.Management;
 using System.Net;
 using System.Net.Sockets;
 using iText.IO.Image;
-using iText.Kernel.Geom;
 using iText.Kernel.Pdf;
 using iText.Layout;
 using iText.Layout.Element;
