@@ -126,7 +126,7 @@ internal static class WhoisService
 				_ = result.AppendLine(row);
 			}
 
-			_ = result.AppendLine("---------------------------------------------------------------------\n");
+			_ = result.AppendLine("---------------------------------------------------------------------");
 			return result.ToString();
 		}
 		catch (Exception ex)

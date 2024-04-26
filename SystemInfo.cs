@@ -1,7 +1,6 @@
 ﻿#pragma warning disable CA1305
 #pragma warning disable CA1812
 #pragma warning disable CA2000
-#pragma warning disable IDE0058
 
 using System.Management;
 using System.Net;
@@ -26,12 +25,14 @@ internal static class SystemInfo
 		Paragraph ipPara = new($"IP Address: {await GetExternalIpAddress().ConfigureAwait(false)}");
 		Paragraph infoPara = new($"Program took screenshot of https://{WhoisService.ConvertToPunycode(url.Remove(0, 8))}");
 		Paragraph whoisPara = new(await WhoisService.SearchInfoAsync(url).ConfigureAwait(false));
+		Paragraph routePara = new(Utilities.TraceRoute(WhoisService.ConvertToPunycode(url.Remove(0, 8))));
 
-		doc.Add(osPara);
-		doc.Add(timePara);
-		doc.Add(ipPara);
-		doc.Add(infoPara);
-		doc.Add(whoisPara);
+		_ = doc.Add(osPara);
+		_ = doc.Add(timePara);
+		_ = doc.Add(ipPara);
+		_ = doc.Add(infoPara);
+		_ = doc.Add(whoisPara);
+		_ = doc.Add(routePara);
 
 		Image img = new(ImageDataFactory.Create(imageBytes));
 
@@ -41,7 +42,7 @@ internal static class SystemInfo
 		// Старый метод - весь скриншот ужимается до размеров страницы
 		//img.ScaleToFit(pdf.GetDefaultPageSize().GetWidth(), pdf.GetDefaultPageSize().GetHeight());
 
-		doc.Add(img);
+		_ = doc.Add(img);
 		doc.Close();
 	}
 
@@ -80,8 +81,8 @@ internal static class SystemInfo
 		Socket socket = new(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
 
 		socket.Connect(ipEndPoint);
-		socket.Send(ntpData);
-		socket.Receive(ntpData);
+		_ = socket.Send(ntpData);
+		_ = socket.Receive(ntpData);
 		socket.Close();
 
 		ulong intPart = ((ulong) ntpData [40] << 24) | ((ulong) ntpData [41] << 16) | ((ulong) ntpData [42] << 8) | ntpData [43];

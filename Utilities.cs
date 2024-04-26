@@ -1,6 +1,9 @@
-﻿#pragma warning disable CA2000
-#pragma warning disable IDE0058
+﻿#pragma warning disable CA1305
+#pragma warning disable CA2000
 
+using System.Net.NetworkInformation;
+using System.Net;
+using System.Text;
 using iText.Kernel.Pdf;
 using iText.Kernel.Utils;
 using PuppeteerSharp;
@@ -26,7 +29,7 @@ internal static class Utilities
 		{
 			using PdfReader reader = new(inputPdfPath);
 			using PdfDocument inputDoc = new(reader);
-			merger.Merge(inputDoc, 1, inputDoc.GetNumberOfPages());
+			_ = merger.Merge(inputDoc, 1, inputDoc.GetNumberOfPages());
 		}
 
 		merger.Close();
@@ -36,7 +39,7 @@ internal static class Utilities
 	{
 		using (BrowserFetcher browserFetcher = new())
 		{
-			await browserFetcher.DownloadAsync().ConfigureAwait(false);
+			_ = await browserFetcher.DownloadAsync().ConfigureAwait(false);
 		}
 
 		using IBrowser browser = await Puppeteer.LaunchAsync(new LaunchOptions
@@ -48,8 +51,8 @@ internal static class Utilities
 
 		using IPage page = await browser.NewPageAsync().ConfigureAwait(false);
 
-		await page.GoToAsync(url).ConfigureAwait(false);
-		await page.EvaluateExpressionHandleAsync("document.fonts.ready").ConfigureAwait(false);
+		_ = await page.GoToAsync(url).ConfigureAwait(false);
+		_ = await page.EvaluateExpressionHandleAsync("document.fonts.ready").ConfigureAwait(false);
 
 		// Делаем настоящий скриншот
 		byte [] imageBytes = await page.ScreenshotDataAsync(new ScreenshotOptions()
@@ -71,5 +74,40 @@ internal static class Utilities
 		await browser.CloseAsync().ConfigureAwait(false);
 
 		return imageBytes;
+	}
+
+	internal static string TraceRoute (string destination)
+	{
+		IPAddress ipAddress = Dns.GetHostAddresses(destination) [0];
+		Ping ping = new();
+		StringBuilder result = new();
+
+		_ = result.AppendLine("\n---------------------------------------------------------------------");
+		_ = result.AppendLine($"TraceRoute to {destination}\n");
+
+		for (int ttl = 1; ttl <= 30; ttl++)
+		{
+			PingOptions options = new(ttl, true);
+			PingReply reply = ping.Send(ipAddress, 1000, new byte [32], options);
+
+			if (reply.Status is IPStatus.TtlExpired or IPStatus.Success)
+			{
+				_ = result.AppendLine($"{ttl}: {reply.Address} ({reply.RoundtripTime} ms)");
+
+				if (reply.Status == IPStatus.Success)
+				{
+					_ = result.AppendLine("Reached destination");
+					break;
+				}
+			}
+			else
+			{
+				_ = result.AppendLine($"{ttl}: *"); // Выводим "*", если не получили ответа
+			}
+		}
+
+		_ = result.AppendLine("\n---------------------------------------------------------------------");
+
+		return result.ToString();
 	}
 }
