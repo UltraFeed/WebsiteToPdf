@@ -83,7 +83,7 @@ internal static class Utilities
 		StringBuilder result = new();
 
 		_ = result.AppendLine("\n---------------------------------------------------------------------");
-		_ = result.AppendLine($"TraceRoute to {destination}\n");
+		_ = result.AppendLine($"Traceroute to {destination}\n");
 
 		for (int ttl = 1; ttl <= 30; ttl++)
 		{
