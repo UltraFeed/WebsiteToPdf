@@ -1,8 +1,8 @@
 ﻿#pragma warning disable CA1305
 #pragma warning disable CA2000
 
-using System.Net.NetworkInformation;
 using System.Net;
+using System.Net.NetworkInformation;
 using System.Text;
 using iText.Kernel.Pdf;
 using iText.Kernel.Utils;
