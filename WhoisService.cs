@@ -16,6 +16,11 @@ internal static class WhoisService
 
 	internal static async Task<string> SearchInfoAsync (string website)
 	{
+		int index = website.IndexOf('/', StringComparison.OrdinalIgnoreCase);
+		if (index != -1)
+		{
+			website = website.Substring(0, index);
+		}
 
 		string [] domainLevels = website.Trim().Split('.');
 		List<string>? whoisServers = null;
