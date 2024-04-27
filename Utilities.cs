@@ -76,14 +76,14 @@ internal static class Utilities
 		return imageBytes;
 	}
 
-	internal static string TraceRoute (string destination)
+	internal static string TraceRoute (string website)
 	{
-		IPAddress ipAddress = Dns.GetHostAddresses(destination) [0];
+		IPAddress ipAddress = Dns.GetHostAddresses(website) [0];
 		Ping ping = new();
 		StringBuilder result = new();
 
 		_ = result.AppendLine("\n---------------------------------------------------------------------");
-		_ = result.AppendLine($"Traceroute to {destination}\n");
+		_ = result.AppendLine($"Traceroute to {website}\n");
 
 		for (int ttl = 1; ttl <= 30; ttl++)
 		{
