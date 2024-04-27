@@ -16,10 +16,6 @@ internal static class WhoisService
 
 	internal static async Task<string> SearchInfoAsync (string website)
 	{
-		if (website.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
-		{
-			website = website.Remove(0, 8);
-		}
 
 		string [] domainLevels = website.Trim().Split('.');
 		List<string>? whoisServers = null;
@@ -42,7 +38,7 @@ internal static class WhoisService
 			StringBuilder result = new();
 			foreach (string whoisServer in whoisServers)
 			{
-				_ = result.AppendLine(await LookupAsync(whoisServer, website).ConfigureAwait(false));
+				_ = result.AppendLine(await LookupAsync(website, whoisServer).ConfigureAwait(false));
 			}
 
 			return result.ToString();
@@ -100,7 +96,7 @@ internal static class WhoisService
 		}
 	}
 
-	private static async Task<string> LookupAsync (string whoisServer, string domainName)
+	private static async Task<string> LookupAsync (string domainName, string whoisServer)
 	{
 		if (string.IsNullOrEmpty(whoisServer) || string.IsNullOrEmpty(domainName))
 		{
@@ -119,7 +115,6 @@ internal static class WhoisService
 
 			_ = result.AppendLine("---------------------------------------------------------------------");
 			_ = result.AppendLine($"According to {whoisServer}:\n");
-
 			string? row;
 			while ((row = await sr.ReadLineAsync().ConfigureAwait(false)) != null)
 			{

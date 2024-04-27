@@ -13,7 +13,7 @@ using iText.Layout.Element;
 namespace WebsiteToPdf;
 internal static class SystemInfo
 {
-	internal static async Task CreatePdfFiles (string website, string pdfPathText, string pdfPathScreen)
+	internal static async Task CreatePdfFiles (Uri website, string pdfPathText, string pdfPathScreen)
 	{
 		byte [] imageBytes = await Utilities.TakeScreenshot(website, pdfPathScreen).ConfigureAwait(false);
 
@@ -23,10 +23,9 @@ internal static class SystemInfo
 		Paragraph osPara = new(GetOsInfo());
 		Paragraph timePara = new($"Time UTC+0 = {GetNtpTime("pool.ntp.org")}");
 		Paragraph ipPara = new($"IP Address: {await GetExternalIpAddress().ConfigureAwait(false)}");
-		Paragraph infoPara = new($"Program took screenshot of https://{WhoisService.ConvertToPunycode(website.Remove(0, 8))}");
-		Paragraph whoisPara = new(await WhoisService.SearchInfoAsync(website).ConfigureAwait(false));
-		Paragraph routePara = new(Utilities.TraceRoute(WhoisService.ConvertToPunycode(website)));
-
+		Paragraph infoPara = new($"Program took screenshot of {WhoisService.ConvertToPunycode(website.AbsoluteUri)}");
+		Paragraph whoisPara = new(await WhoisService.SearchInfoAsync(website.Host).ConfigureAwait(false));
+		Paragraph routePara = new(Utilities.TraceRoute(website));
 		_ = doc.Add(osPara);
 		_ = doc.Add(timePara);
 		_ = doc.Add(ipPara);

@@ -8,18 +8,26 @@ internal sealed class Program
 	internal static async Task Main ()
 	{
 		bool debug = false;
-		string website;
+		Uri website;
 		if (debug)
 		{
-			website = "ru.wikipedia.org/wiki/C_Sharp";
+			website = new("https://япомогу.рф");
 		}
 		else
 		{
-			Console.Write("Enter website: https://");
-			website = Console.ReadLine();
+			Console.Write("Введите URL:");
+			string uriString = Console.ReadLine();
+			if (Uri.TryCreate(uriString, UriKind.Absolute, out website))
+			{
+				Console.WriteLine($"URL успешно создан: {website}");
+			}
+			else
+			{
+				Console.WriteLine("Ошибка: Введенная строка не является допустимым URL");
+				_ = Console.ReadLine();
+				Environment.Exit(0);
+			}
 		}
-
-		website = string.Concat("https://", website);
 
 		string output = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads", "output.pdf");
 		string pdfTemp1 = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads", "pdfTemp1.pdf");

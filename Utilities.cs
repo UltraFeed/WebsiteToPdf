@@ -35,7 +35,7 @@ internal static class Utilities
 		merger.Close();
 	}
 
-	internal static async Task<byte []> TakeScreenshot (string website, string pdfPathScreen)
+	internal static async Task<byte []> TakeScreenshot (Uri website, string pdfPathScreen)
 	{
 		using (BrowserFetcher browserFetcher = new())
 		{
@@ -51,7 +51,7 @@ internal static class Utilities
 
 		using IPage page = await browser.NewPageAsync().ConfigureAwait(false);
 
-		_ = await page.GoToAsync(website).ConfigureAwait(false);
+		_ = await page.GoToAsync(website.AbsoluteUri).ConfigureAwait(false);
 		_ = await page.EvaluateExpressionHandleAsync("document.fonts.ready").ConfigureAwait(false);
 
 		// Делаем настоящий скриншот
@@ -76,9 +76,9 @@ internal static class Utilities
 		return imageBytes;
 	}
 
-	internal static string TraceRoute (string website)
+	internal static string TraceRoute (Uri website)
 	{
-		IPAddress ipAddress = Dns.GetHostAddresses(website) [0];
+		IPAddress ipAddress = Dns.GetHostAddresses(website.Host) [0];
 		Ping ping = new();
 		StringBuilder result = new();
 
