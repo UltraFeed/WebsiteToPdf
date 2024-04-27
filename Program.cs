@@ -8,18 +8,18 @@ internal sealed class Program
 	internal static async Task Main ()
 	{
 		bool debug = false;
-		string url;
+		string website;
 		if (debug)
 		{
-			url = "ru.wikipedia.org/wiki/C_Sharp";
+			website = "ru.wikipedia.org/wiki/C_Sharp";
 		}
 		else
 		{
 			Console.Write("Enter website: https://");
-			url = Console.ReadLine();
+			website = Console.ReadLine();
 		}
 
-		url = string.Concat("https://", url);
+		website = string.Concat("https://", website);
 
 		string pdfTemp1 = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads", "pdfTemp1.pdf");
 		string pdfTemp2 = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads", "pdfTemp2.pdf");
@@ -27,7 +27,7 @@ internal sealed class Program
 
 		Utilities.RemoveFiles([pdfTemp1, pdfTemp2, output]);
 
-		await SystemInfo.CreatePdfFiles(url, pdfTemp1, pdfTemp2).ConfigureAwait(false);
+		await SystemInfo.CreatePdfFiles(website, pdfTemp1, pdfTemp2).ConfigureAwait(false);
 
 		Utilities.MergePdfFiles([pdfTemp1, pdfTemp2], output);
 		Utilities.RemoveFiles([pdfTemp2, pdfTemp1]);

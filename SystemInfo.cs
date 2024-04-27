@@ -13,9 +13,9 @@ using iText.Layout.Element;
 namespace WebsiteToPdf;
 internal static class SystemInfo
 {
-	internal static async Task CreatePdfFiles (string url, string pdfPathText, string pdfPathScreen)
+	internal static async Task CreatePdfFiles (string website, string pdfPathText, string pdfPathScreen)
 	{
-		byte [] imageBytes = await Utilities.TakeScreenshot(url, pdfPathScreen).ConfigureAwait(false);
+		byte [] imageBytes = await Utilities.TakeScreenshot(website, pdfPathScreen).ConfigureAwait(false);
 
 		using PdfDocument pdf = new(new PdfWriter(new FileStream(pdfPathText, FileMode.Create), new WriterProperties().SetPdfVersion(PdfVersion.PDF_2_0).UseSmartMode()));
 		using Document doc = new(pdf);
@@ -23,9 +23,9 @@ internal static class SystemInfo
 		Paragraph osPara = new(GetOsInfo());
 		Paragraph timePara = new($"Time UTC+0 = {GetNtpTime("pool.ntp.org")}");
 		Paragraph ipPara = new($"IP Address: {await GetExternalIpAddress().ConfigureAwait(false)}");
-		Paragraph infoPara = new($"Program took screenshot of https://{WhoisService.ConvertToPunycode(url.Remove(0, 8))}");
-		Paragraph whoisPara = new(await WhoisService.SearchInfoAsync(url).ConfigureAwait(false));
-		Paragraph routePara = new(Utilities.TraceRoute(WhoisService.ConvertToPunycode(url.Remove(0, 8))));
+		Paragraph infoPara = new($"Program took screenshot of https://{WhoisService.ConvertToPunycode(website.Remove(0, 8))}");
+		Paragraph whoisPara = new(await WhoisService.SearchInfoAsync(website).ConfigureAwait(false));
+		Paragraph routePara = new(Utilities.TraceRoute(WhoisService.ConvertToPunycode(website)));
 
 		_ = doc.Add(osPara);
 		_ = doc.Add(timePara);
