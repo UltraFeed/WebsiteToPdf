@@ -83,7 +83,7 @@ internal static class Utilities
 		StringBuilder result = new();
 
 		_ = result.AppendLine("\n---------------------------------------------------------------------");
-		_ = result.AppendLine($"Traceroute to {website}\n");
+		_ = result.AppendLine($"Traceroute to {WhoisService.ConvertToPunycode(website.AbsoluteUri)}\n");
 
 		for (int ttl = 1; ttl <= 30; ttl++)
 		{

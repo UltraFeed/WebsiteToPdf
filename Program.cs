@@ -9,23 +9,26 @@ internal sealed class Program
 	{
 		bool debug = false;
 		Uri website;
-		if (debug)
+		while (true)
 		{
-			website = new("https://япомогу.рф");
-		}
-		else
-		{
-			Console.Write("Введите URL:");
-			string uriString = Console.ReadLine();
-			if (Uri.TryCreate(uriString, UriKind.Absolute, out website))
+			if (debug)
 			{
-				Console.WriteLine($"URL успешно создан: {website}");
+				website = new("https://япомогу.рф");
+				break;
 			}
 			else
 			{
-				Console.WriteLine("Ошибка: Введенная строка не является допустимым URL");
-				_ = Console.ReadLine();
-				Environment.Exit(0);
+				Console.Write("Введите URL:");
+				string uriString = Console.ReadLine();
+				if (Uri.TryCreate(uriString, UriKind.Absolute, out website))
+				{
+					Console.WriteLine($"URL успешно создан: {website}");
+					break;
+				}
+				else
+				{
+					Console.WriteLine("Ошибка: Введенная строка не является допустимым URL");
+				}
 			}
 		}
 
