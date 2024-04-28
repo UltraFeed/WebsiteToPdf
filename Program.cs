@@ -12,7 +12,7 @@ internal sealed class Program
 		{
 			if (debug)
 			{
-				website = new("https://япомогу.рф");
+				website = new("https://ru.wikipedia.org/wiki/C_Sharp");
 				break;
 			}
 			else
