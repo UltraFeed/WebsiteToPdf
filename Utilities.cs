@@ -125,25 +125,30 @@ internal static class Utilities
 	{
 		using ManagementObjectSearcher searcher = new("SELECT * FROM Win32_OperatingSystem");
 		ManagementObjectCollection osCollection = searcher.Get();
-		string osInfo = "";
+		StringBuilder result = new();
+
+		_ = result.AppendLine("\n---------------------------------------------------------------------");
+		_ = result.AppendLine($"System Info");
 
 		foreach (ManagementObject os in osCollection.Cast<ManagementObject>())
 		{
 			PropertyDataCollection properties = os.Properties;
 			foreach (PropertyData property in properties)
 			{
-				osInfo += $"{property.Name}: {property.Value}\n";
+				_ = result.Append($"{property.Name}: {property.Value}\n");
 			}
 		}
 
-		return osInfo;
+		_ = result.AppendLine("---------------------------------------------------------------------");
+
+		return result.ToString();
 	}
 
 	internal static async Task<string> TraceRouteAsync (Uri website)
 	{
+		StringBuilder result = new();
 		IPAddress ipAddress = (await Dns.GetHostAddressesAsync(website.Host).ConfigureAwait(false)) [0];
 		Ping ping = new();
-		StringBuilder result = new();
 
 		_ = result.AppendLine("\n---------------------------------------------------------------------");
 		_ = result.AppendLine($"Traceroute to {website.IdnHost}\n");
@@ -169,15 +174,19 @@ internal static class Utilities
 			}
 		}
 
-		_ = result.AppendLine("\n---------------------------------------------------------------------");
+		_ = result.AppendLine("---------------------------------------------------------------------");
 
 		return result.ToString();
 	}
 
 	internal static async Task<string> GetWhoisResponseAsync (Uri website, string whoisServer)
 	{
+		StringBuilder result = new();
 		website = new Uri(website.GetLeftPart(UriPartial.Authority));
 		string domain = website.IdnHost;
+
+		_ = result.AppendLine("\n---------------------------------------------------------------------");
+		_ = result.AppendLine($"Whois to {website.IdnHost}\n");
 
 		using TcpClient tcpClient = new();
 		await tcpClient.ConnectAsync(whoisServer, 43).ConfigureAwait(false);
@@ -189,7 +198,11 @@ internal static class Utilities
 		byte [] responseBytes = new byte [1024];
 		int bytesRead = await stream.ReadAsync(responseBytes).ConfigureAwait(false);
 
-		return Encoding.ASCII.GetString(responseBytes, 0, bytesRead);
+		_ = result.AppendLine(Encoding.ASCII.GetString(responseBytes, 0, bytesRead));
+
+		_ = result.AppendLine("---------------------------------------------------------------------");
+
+		return result.ToString();
 	}
 
 	internal static async Task<string> GetNtpTimeAsync (string ntpServer)
