@@ -1,16 +1,61 @@
 ﻿#pragma warning disable CA1305
 #pragma warning disable CA2000
 
+using System.Management;
 using System.Net;
 using System.Net.NetworkInformation;
+using System.Net.Sockets;
 using System.Text;
+using iText.IO.Image;
 using iText.Kernel.Pdf;
 using iText.Kernel.Utils;
+using iText.Layout;
+using iText.Layout.Element;
 using PuppeteerSharp;
 
 namespace WebsiteToPdf;
 internal static class Utilities
 {
+	internal static async Task CreatePdfFiles (Uri website, string pdfPathText, string pdfPathScreen)
+	{
+		byte [] imageBytes = await TakeScreenshot(website, pdfPathScreen).ConfigureAwait(false);
+
+		using PdfDocument pdf = new(new PdfWriter(new FileStream(pdfPathText, FileMode.Create), new WriterProperties().SetPdfVersion(PdfVersion.PDF_2_0).UseSmartMode()));
+		using Document doc = new(pdf);
+
+		Paragraph osPara = new(GetOsInfo());
+		Paragraph timePara = new($"Time UTC+0 = {await GetNtpTimeAsync("pool.ntp.org").ConfigureAwait(false)}");
+		Paragraph ipPara = new($"IP Address: {await GetExternalIpAddress().ConfigureAwait(false)}");
+		Paragraph infoPara = new($"Program took screenshot of {website.IdnHost}");
+		Paragraph whoisPara = new(await GetWhoisResponseAsync(website, "whois.iana.org").ConfigureAwait(false));
+		Paragraph routePara = new(await TraceRouteAsync(website).ConfigureAwait(false));
+
+		_ = doc.Add(osPara);
+		_ = doc.Add(timePara);
+		_ = doc.Add(ipPara);
+		_ = doc.Add(infoPara);
+		_ = doc.Add(whoisPara);
+		_ = doc.Add(routePara);
+
+		Image img = new(ImageDataFactory.Create(imageBytes));
+
+		// Новый метод - растягиваем страницу до размеров скриншота
+		pdf.SetDefaultPageSize(new(img.GetImageWidth(), img.GetImageHeight()));
+
+		// Старый метод - весь скриншот ужимается до размеров страницы
+		//img.ScaleToFit(pdf.GetDefaultPageSize().GetWidth(), pdf.GetDefaultPageSize().GetHeight());
+
+		_ = doc.Add(img);
+		doc.Close();
+	}
+
+	internal static async Task<string> GetExternalIpAddress ()
+	{
+		Uri IpApiUri = new("https://api.ipify.org?format=text");
+		using HttpClient httpClient = new();
+		return await httpClient.GetStringAsync(IpApiUri).ConfigureAwait(false);
+	}
+
 	internal static void RemoveFiles (string [] files)
 	{
 		foreach (string file in files)
@@ -76,19 +121,37 @@ internal static class Utilities
 		return imageBytes;
 	}
 
-	internal static string TraceRoute (Uri website)
+	internal static string GetOsInfo ()
 	{
-		IPAddress ipAddress = Dns.GetHostAddresses(website.Host) [0];
+		using ManagementObjectSearcher searcher = new("SELECT * FROM Win32_OperatingSystem");
+		ManagementObjectCollection osCollection = searcher.Get();
+		string osInfo = "";
+
+		foreach (ManagementObject os in osCollection.Cast<ManagementObject>())
+		{
+			PropertyDataCollection properties = os.Properties;
+			foreach (PropertyData property in properties)
+			{
+				osInfo += $"{property.Name}: {property.Value}\n";
+			}
+		}
+
+		return osInfo;
+	}
+
+	internal static async Task<string> TraceRouteAsync (Uri website)
+	{
+		IPAddress ipAddress = (await Dns.GetHostAddressesAsync(website.Host).ConfigureAwait(false)) [0];
 		Ping ping = new();
 		StringBuilder result = new();
 
 		_ = result.AppendLine("\n---------------------------------------------------------------------");
-		_ = result.AppendLine($"Traceroute to {WhoisService.ConvertToPunycode(website.AbsoluteUri)}\n");
+		_ = result.AppendLine($"Traceroute to {website.IdnHost}\n");
 
 		for (int ttl = 1; ttl <= 30; ttl++)
 		{
 			PingOptions options = new(ttl, true);
-			PingReply reply = ping.Send(ipAddress, 1000, new byte [32], options);
+			PingReply reply = await ping.SendPingAsync(ipAddress, 1000, new byte [32], options).ConfigureAwait(false);
 
 			if (reply.Status is IPStatus.TtlExpired or IPStatus.Success)
 			{
@@ -109,5 +172,44 @@ internal static class Utilities
 		_ = result.AppendLine("\n---------------------------------------------------------------------");
 
 		return result.ToString();
+	}
+
+	internal static async Task<string> GetWhoisResponseAsync (Uri website, string whoisServer)
+	{
+		website = new Uri(website.GetLeftPart(UriPartial.Authority));
+		string domain = website.IdnHost;
+
+		using TcpClient tcpClient = new();
+		await tcpClient.ConnectAsync(whoisServer, 43).ConfigureAwait(false);
+
+		using NetworkStream stream = tcpClient.GetStream();
+		byte [] requestBytes = Encoding.ASCII.GetBytes(domain + "\r\n");
+		await stream.WriteAsync(requestBytes).ConfigureAwait(false);
+
+		byte [] responseBytes = new byte [1024];
+		int bytesRead = await stream.ReadAsync(responseBytes).ConfigureAwait(false);
+
+		return Encoding.ASCII.GetString(responseBytes, 0, bytesRead);
+	}
+
+	internal static async Task<string> GetNtpTimeAsync (string ntpServer)
+	{
+		byte [] ntpData = new byte [48];
+		ntpData [0] = 0x1B; //LeapIndicator = 0 (no warning), VersionNum = 3 (IPv4 only), Mode = 3 (Client Mode)
+
+		IPAddress [] addresses = await Dns.GetHostEntryAsync(ntpServer).ContinueWith(t => t.Result.AddressList, TaskScheduler.Default).ConfigureAwait(false);
+		IPEndPoint ipEndPoint = new(addresses [0], 123);
+		using Socket socket = new(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
+
+		await socket.ConnectAsync(ipEndPoint).ConfigureAwait(false);
+		_ = await socket.SendAsync(new ArraySegment<byte>(ntpData), SocketFlags.None).ConfigureAwait(false);
+		_ = await socket.ReceiveAsync(new ArraySegment<byte>(ntpData), SocketFlags.None).ConfigureAwait(false);
+
+		ulong intPart = ((ulong) ntpData [40] << 24) | ((ulong) ntpData [41] << 16) | ((ulong) ntpData [42] << 8) | ntpData [43];
+		ulong fractPart = ((ulong) ntpData [44] << 24) | ((ulong) ntpData [45] << 16) | ((ulong) ntpData [46] << 8) | ntpData [47];
+
+		ulong milliseconds = (intPart * 1000) + (fractPart * 1000 / 0x100000000L);
+		DateTime networkDateTime = new DateTime(1900, 1, 1).AddMilliseconds((long) milliseconds);
+		return $"{networkDateTime:yyyy-MM-dd HH:mm:ss.fff}";
 	}
 }

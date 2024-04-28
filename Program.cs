@@ -1,5 +1,4 @@
 ﻿#pragma warning disable CA1303
-#pragma warning disable CS8600
 
 namespace WebsiteToPdf;
 
@@ -8,7 +7,7 @@ internal sealed class Program
 	internal static async Task Main ()
 	{
 		bool debug = false;
-		Uri website;
+		Uri? website;
 		while (true)
 		{
 			if (debug)
@@ -18,8 +17,8 @@ internal sealed class Program
 			}
 			else
 			{
-				Console.Write("Введите URL:");
-				string uriString = Console.ReadLine();
+				Console.Write($"Введите URL:");
+				string? uriString = Console.ReadLine();
 				if (Uri.TryCreate(uriString, UriKind.Absolute, out website))
 				{
 					Console.WriteLine($"URL успешно создан: {website}");
@@ -27,7 +26,7 @@ internal sealed class Program
 				}
 				else
 				{
-					Console.WriteLine("Ошибка: Введенная строка не является допустимым URL");
+					Console.WriteLine($"Ошибка: Введенная строка не является допустимым URL");
 				}
 			}
 		}
@@ -38,7 +37,7 @@ internal sealed class Program
 
 		Utilities.RemoveFiles([pdfTemp1, pdfTemp2, output]);
 
-		await SystemInfo.CreatePdfFiles(website, pdfTemp1, pdfTemp2).ConfigureAwait(false);
+		await Utilities.CreatePdfFiles(website, pdfTemp1, pdfTemp2).ConfigureAwait(false);
 
 		Utilities.MergePdfFiles([pdfTemp1, pdfTemp2], output);
 		Utilities.RemoveFiles([pdfTemp2, pdfTemp1]);
