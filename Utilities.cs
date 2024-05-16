@@ -1,12 +1,15 @@
 ﻿#pragma warning disable CA1305
 #pragma warning disable CA2000
+#pragma warning disable CS8604
 
 using System.Management;
 using System.Net;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
+using System.Reflection;
 using System.Text;
 using iText.IO.Image;
+using iText.Kernel.Font;
 using iText.Kernel.Pdf;
 using iText.Kernel.Utils;
 using iText.Layout;
@@ -19,16 +22,19 @@ internal static class Utilities
 	internal static async Task CreatePdfFiles (Uri website, string pdfPathText, string pdfPathScreen)
 	{
 		byte [] imageBytes = await TakeScreenshot(website, pdfPathScreen).ConfigureAwait(false);
+		Image img = new(ImageDataFactory.Create(imageBytes));
 
 		using PdfDocument pdf = new(new PdfWriter(new FileStream(pdfPathText, FileMode.Create), new WriterProperties().SetPdfVersion(PdfVersion.PDF_2_0).UseSmartMode()));
 		using Document doc = new(pdf);
+		string fontPath = "WebsiteToPdf.resources.FreeSans.ttf";
+		PdfFont font = GetFont(fontPath);
 
-		Paragraph osPara = new(GetOsInfo());
-		Paragraph timePara = new($"Time UTC+0 = {await GetNtpTimeAsync("pool.ntp.org").ConfigureAwait(false)}");
-		Paragraph ipPara = new($"IP Address: {await GetExternalIpAddress().ConfigureAwait(false)}");
-		Paragraph infoPara = new($"Program took screenshot of {website.IdnHost}");
-		Paragraph whoisPara = new(await GetWhoisResponseAsync(website, "whois.iana.org").ConfigureAwait(false));
-		Paragraph routePara = new(await TraceRouteAsync(website).ConfigureAwait(false));
+		Paragraph osPara = CreateParagraph(GetOsInfo(), font);
+		Paragraph timePara = CreateParagraph($"Время по UTC+0: {await GetNtpTimeAsync("pool.ntp.org").ConfigureAwait(false)}", font);
+		Paragraph ipPara = CreateParagraph($"Внешний IP: {await GetExternalIpAddress().ConfigureAwait(false)}", font);
+		Paragraph infoPara = CreateParagraph($"Программа сделала скриншот сайта: {website.IdnHost}", font);
+		Paragraph whoisPara = CreateParagraph(await GetWhoisResponseAsync(website, "whois.iana.org").ConfigureAwait(false), font);
+		Paragraph routePara = CreateParagraph(await TraceRouteAsync(website).ConfigureAwait(false), font);
 
 		_ = doc.Add(osPara);
 		_ = doc.Add(timePara);
@@ -36,8 +42,6 @@ internal static class Utilities
 		_ = doc.Add(infoPara);
 		_ = doc.Add(whoisPara);
 		_ = doc.Add(routePara);
-
-		Image img = new(ImageDataFactory.Create(imageBytes));
 
 		// Новый метод - растягиваем страницу до размеров скриншота
 		pdf.SetDefaultPageSize(new(img.GetImageWidth(), img.GetImageHeight()));
@@ -47,6 +51,19 @@ internal static class Utilities
 
 		_ = doc.Add(img);
 		doc.Close();
+	}
+
+	internal static Paragraph CreateParagraph (string message, PdfFont font)
+	{
+		string str = Encoding.GetEncoding("Windows-1251").GetString(Encoding.GetEncoding("Windows-1251").GetBytes(message));
+		return new Paragraph(str).SetFont(font);
+	}
+
+	internal static PdfFont GetFont (string fontPath)
+	{
+		using Stream? fontStream = Assembly.GetExecutingAssembly().GetManifestResourceStream(fontPath);
+		byte [] fontBytes = new BinaryReader(fontStream).ReadBytes((int) fontStream.Length);
+		return PdfFontFactory.CreateFont(fontBytes, "Cp1251", PdfFontFactory.EmbeddingStrategy.FORCE_EMBEDDED);
 	}
 
 	internal static async Task<string> GetExternalIpAddress ()
@@ -127,7 +144,7 @@ internal static class Utilities
 		ManagementObjectCollection osCollection = searcher.Get();
 		StringBuilder result = new();
 
-		_ = result.AppendLine("\n---------------------------------------------------------------------");
+		_ = result.AppendLine("---------------------------------------------------------------------");
 		_ = result.AppendLine($"System Info");
 
 		foreach (ManagementObject os in osCollection.Cast<ManagementObject>())
