@@ -31,15 +31,15 @@ internal sealed class Program
 			}
 		}
 
-		string output = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads", "output.pdf");
-		string pdfTemp1 = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads", "pdfTemp1.pdf");
-		string pdfTemp2 = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads", "pdfTemp2.pdf");
+		string outputPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads", "output.pdf");
+		string pdfTemp1Path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads", "pdfTemp1.pdf");
+		string pdfTemp2Path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads", "pdfTemp2.pdf");
 
-		Utilities.RemoveFiles([pdfTemp1, pdfTemp2, output]);
+		Utilities.RemoveFiles([pdfTemp1Path, pdfTemp2Path, outputPath]);
 
-		await Utilities.CreatePdfFiles(website, pdfTemp1, pdfTemp2).ConfigureAwait(false);
+		await Utilities.CreatePdfFiles(website, pdfTemp1Path, pdfTemp2Path).ConfigureAwait(false);
 
-		Utilities.MergePdfFiles([pdfTemp1, pdfTemp2], output);
-		Utilities.RemoveFiles([pdfTemp2, pdfTemp1]);
+		Utilities.MergePdfFiles([pdfTemp1Path, pdfTemp2Path], outputPath);
+		Utilities.RemoveFiles([pdfTemp2Path, pdfTemp1Path]);
 	}
 }
