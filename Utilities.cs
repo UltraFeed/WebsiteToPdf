@@ -73,7 +73,7 @@ internal static class Utilities
 		return await httpClient.GetStringAsync(IpApiUri).ConfigureAwait(false);
 	}
 
-	internal static void RemoveFiles (string [] files)
+	internal static void RemoveFiles (List<string> files)
 	{
 		foreach (string file in files)
 		{
