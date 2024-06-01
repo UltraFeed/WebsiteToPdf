@@ -6,8 +6,8 @@
         ":disableDependencyDashboard",
         ":disableRateLimiting",
         ":automergeBranch",
-		":automergeDigest",
-		":automergeMinor"
+	":automergeDigest",
+	":automergeMinor"
     ],
     "git-submodules": 
     {
