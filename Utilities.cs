@@ -8,12 +8,16 @@ using System.Net.NetworkInformation;
 using System.Net.Sockets;
 using System.Reflection;
 using System.Text;
+using iText.IO.Font.Constants;
 using iText.IO.Image;
+using iText.Kernel.Events;
 using iText.Kernel.Font;
 using iText.Kernel.Pdf;
+using iText.Kernel.Pdf.Canvas;
 using iText.Kernel.Utils;
 using iText.Layout;
 using iText.Layout.Element;
+using iText.Layout.Properties;
 using PuppeteerSharp;
 
 namespace WebsiteToPdf;
@@ -29,19 +33,102 @@ internal static class Utilities
         string fontPath = "WebsiteToPdf.resources.FreeSans.ttf";
         PdfFont font = GetFont(fontPath);
 
-        Paragraph osPara = CreateParagraph(GetOsInfo(), font);
-        Paragraph timePara = CreateParagraph($"Время по UTC+0: {await GetNtpTimeAsync("pool.ntp.org").ConfigureAwait(false)}", font);
-        Paragraph ipPara = CreateParagraph($"Внешний IP: {await GetExternalIpAddress().ConfigureAwait(false)}", font);
-        Paragraph infoPara = CreateParagraph($"Программа сделала скриншот сайта: {website.IdnHost}", font);
-        Paragraph whoisPara = CreateParagraph(await GetWhoisResponseAsync(website, "whois.iana.org").ConfigureAwait(false), font);
-        Paragraph routePara = CreateParagraph(await TraceRouteAsync(website).ConfigureAwait(false), font);
+        Paragraph p1 = CreateParagraph(GetOsInfo(), font);
+        Paragraph p2 = CreateParagraph($"Текущее UTC время: {await GetNtpTimeAsync("pool.ntp.org").ConfigureAwait(false)}", font);
+        Paragraph p3 = CreateParagraph($"IP: {await GetExternalIpAddress().ConfigureAwait(false)}", font);
+        Paragraph p4 = CreateParagraph($"Скриншот сайта: {website.IdnHost}", font);
+        Paragraph p5 = CreateParagraph(await GetWhoisResponseAsync(website, "whois.iana.org").ConfigureAwait(false), font);
+        Paragraph p6 = CreateParagraph(await TraceRouteAsync(website).ConfigureAwait(false), font);
+        Paragraph p7 = CreateParagraph($@"ПРОТОКОЛ №1 от {DateTime.UtcNow:HH:mm:ss dd-MM-yyyy} UTC автоматизированного осмотра информации в сети Интернет", font).SetBold().SetTextAlignment(TextAlignment.CENTER).SetMarginTop(36).SetMarginLeft(72).SetMarginRight(72);
+        Paragraph p8 = CreateParagraph("Автоматизированной системой была произведена фиксация следующей информации в сети Интернет:", font).SetMarginLeft(36).SetMarginRight(36).SetTextAlignment(TextAlignment.LEFT);
+        Paragraph p9 = CreateParagraph($@"Страница в сети интернет расположенная по адресу: {website}", font).SetMarginLeft(36).SetMarginRight(36).SetTextAlignment(TextAlignment.LEFT);
+        Paragraph p10 = CreateParagraph($@"Сведения о лице, инициировавшем осмотр: IP адрес {await GetExternalIpAddress().ConfigureAwait(false)}", font).SetMarginLeft(36).SetMarginRight(36).SetTextAlignment(TextAlignment.LEFT);
+        Paragraph p11 = CreateParagraph($@"Задачи осмотра:", font).SetMarginLeft(36).SetMarginRight(36).SetTextAlignment(TextAlignment.LEFT).SetBold();
+        Paragraph p12 = CreateParagraph($@"- Зафиксировать информацию, размещенную по адресу: {website}", font).SetMarginLeft(36).SetMarginRight(36).SetTextAlignment(TextAlignment.LEFT).SetFirstLineIndent(20);
+        Paragraph p13 = CreateParagraph($@"Оборудование и используемое программное обеспечение:", font).SetMarginLeft(36).SetMarginRight(36).SetTextAlignment(TextAlignment.LEFT).SetBold();
+        Paragraph p14 = CreateParagraph($@"- Программный комплекс по фиксации информации в сети Интернет", font).SetMarginLeft(36).SetMarginRight(36).SetTextAlignment(TextAlignment.LEFT).SetFirstLineIndent(20);
+        Paragraph p16 = CreateParagraph($@"- Локальный сервер под управлением Windows;", font).SetMarginLeft(36).SetMarginRight(36).SetTextAlignment(TextAlignment.LEFT).SetFirstLineIndent(20);
+        Paragraph p17 = CreateParagraph($@"Методика проверки корректности осмотра:", font).SetMarginLeft(36).SetMarginRight(36).SetTextAlignment(TextAlignment.LEFT).SetBold();
+        Paragraph p18 = CreateParagraph($@"- В запросе пользователя был приведен Интернет-адрес (адреса) в общепринятой нотации, также известной как «URL» (universal resource locator – универсальный указатель ресурса);", font).SetMarginLeft(36).SetMarginRight(36).SetTextAlignment(TextAlignment.LEFT).SetFirstLineIndent(20);
+        Paragraph p19 = CreateParagraph($@"Адрес состоит из указателя на используемый протокол (http: или https:), разделителя (//) и доменного имени. Веб-страница или файл, имеющие такой адрес (URL), должны быть доступны для любого пользователя, имеющего доступ к сети Интернет, по его запросу через клиент (браузер), поддерживающий протокол HTTP за исключением случаев необходимости ввода пароля для получения доступа к соответствующим страницам.", font).SetMarginLeft(36).SetMarginRight(36).SetTextAlignment(TextAlignment.LEFT);
+        Paragraph p20 = CreateParagraph($@"Для достижения полной уверенности в корректности результата осмотра необходимо соблюдение нескольких дополнительных условий. Необходимо удостовериться, что:", font).SetMarginLeft(36).SetMarginRight(36).SetTextAlignment(TextAlignment.LEFT).SetBold();
+        Paragraph p21 = CreateParagraph($@"- корректно работает служба DNS (domain name system - англ. «система доменных имен»);", font).SetMarginLeft(36).SetMarginRight(36).SetTextAlignment(TextAlignment.LEFT).SetFirstLineIndent(20);
+        Paragraph p22 = CreateParagraph($@"- компьютер (сервер), при помощи которого производится осмотр, всё время имеет связь с сетью Интернет, передаваемая и получаемая информация не искажается и не подменяется намеренно кем-либо;", font).SetMarginLeft(36).SetMarginRight(36).SetTextAlignment(TextAlignment.LEFT).SetFirstLineIndent(20);
+        Paragraph p23 = CreateParagraph($@"- информация получается непосредственно из сети Интернет, а не из кэша (временного буферного хранилища), что могло бы привести к неактуальности полученной информации;", font).SetMarginLeft(36).SetMarginRight(36).SetTextAlignment(TextAlignment.LEFT).SetFirstLineIndent(20);
+        Paragraph p24 = CreateParagraph($@"- вся отображаемая информация возвращается именно осматриваемым сайтом, а не каким-либо другим.", font).SetMarginLeft(36).SetMarginRight(36).SetTextAlignment(TextAlignment.LEFT).SetFirstLineIndent(20);
+        Paragraph p25 = CreateParagraph($@"Вышеперечисленные условия корректности перед началом осмотра сайта были автоматически проверены Системой следующим образом:", font).SetMarginLeft(36).SetMarginRight(36).SetTextAlignment(TextAlignment.LEFT).SetBold();
+        Paragraph p26 = CreateParagraph($@"- был произведен запрос системы DNS без кэширования результата;", font).SetMarginLeft(36).SetMarginRight(36).SetTextAlignment(TextAlignment.LEFT).SetFirstLineIndent(20);
+        Paragraph p27 = CreateParagraph($@"- было использовано оборудование, программное обеспечение и линии связи, которые управляются независимыми, незаинтересованными субъектами и о которых не могла заранее знать сторона, заинтересованная в исходе фиксирования информации;", font).SetMarginLeft(36).SetMarginRight(36).SetTextAlignment(TextAlignment.LEFT).SetFirstLineIndent(20);
+        Paragraph p28 = CreateParagraph($@"- специалистами технической поддержки в ходе планового технического обследования Системы выявлены и отключены кэширующие устройства (программы), которые могут привести к тому, что вместо актуальной версии страницы будет зафиксирована более ранняя, сохранённая в кэше (временном буферном хранилище) версия этой страницы;", font).SetMarginLeft(36).SetMarginRight(36).SetTextAlignment(TextAlignment.LEFT).SetFirstLineIndent(20);
+        Paragraph p29 = CreateParagraph($@"- Системой установлено, что все условия корректности при фиксации информации в сети Интернет, соблюдены. Признаков некорректности работы используемых элементов или признаков подмены данных не обнаружено.", font).SetMarginLeft(36).SetMarginRight(36).SetTextAlignment(TextAlignment.LEFT).SetFirstLineIndent(20);
+        Paragraph p30 = CreateParagraph($@"Непосредственно перед получением изображений осматриваемой страницы Системой были произведены следующие действия:", font).SetMarginLeft(36).SetMarginRight(36).SetTextAlignment(TextAlignment.LEFT).SetBold();
+        Paragraph p31 = CreateParagraph($@"1. Произведена проверка того, что системное время сервера синхронизировано с точным временем по протоколу NTP.
+																				NTP (англ. Network Time Protocol — протокол сетевого времени) — сетевой протокол для получения сведений о точном времени и синхронизации с ним внутренних часов компьютерных систем.", font).SetMarginLeft(36).SetMarginRight(36).SetTextAlignment(TextAlignment.LEFT).SetFirstLineIndent(20);
+        Paragraph p32 = CreateParagraph($@"2. Произведен запрос WHOIS-сервиса в отношении следующих доменных имен: {website}
+																				Доменное имя (домен) - обозначение символами, предназначенное для адресации сайтов в сети Интернет в целях обеспечения доступа к информации, размещенной в сети Интернет.
+																				Термин WHOIS(от англ. who is - «кто такой?») означает сетевой протокол прикладного уровня, базирующийся на протоколе ТСР, и применяемый для получения регистрационных данных о владельцах доменных имен.", font).SetMarginLeft(36).SetMarginRight(36).SetTextAlignment(TextAlignment.LEFT).SetFirstLineIndent(20);
+        Paragraph p33 = CreateParagraph($@"3. При помощи программных средств трассировки маршрутов устанавливается доступность конечного узла, на котором размещена осматриваемая информация и путь прохождения пакетов от конечного узла до технических средств, используемых для осмотра.
+																				DNS(англ.Domain Name System — система доменных имён) — компьютерная распределённая система для получения информации о доменах. Чаще всего используется для получения IP-адреса по имени хоста(компьютера или устройства).", font).SetMarginLeft(36).SetMarginRight(36).SetTextAlignment(TextAlignment.LEFT).SetFirstLineIndent(20);
+        Paragraph p34 = CreateParagraph($@"4. Выполнены автоматизированные запросы в Архив Интернет(Internet Archive).
+																				Отправлен автоматизированный запрос на выполнение архивной копии текущей html - версии следующих интернет-страниц: {website}
+																				Архив в Интернета(англ.Internet Archive) — некоммерческая организация, cобирающая копии веб-страниц, графические материалы, видео-и аудиозаписи и программное обеспечение в сети интернет для долгосрочного архивирования собранного материала и бесплатного доступа к своим базам данных для широкой публики.", font).SetMarginLeft(36).SetMarginRight(36).SetTextAlignment(TextAlignment.LEFT).SetFirstLineIndent(20);
 
-        _ = doc.Add(osPara);
-        _ = doc.Add(timePara);
-        _ = doc.Add(ipPara);
-        _ = doc.Add(infoPara);
-        _ = doc.Add(whoisPara);
-        _ = doc.Add(routePara);
+        Paragraph p35 = CreateParagraph($@"После проведения всех вышеуказанных мероприятий, произведено формирование настоящего протокола, в ходе которого:
+															Системой автоматически выполнены снимки(получены изображения) осматриваемой страницы расположенной по адресу {website}. 
+															Внешний вид и содержание зафиксированных изображений страницы в сети Интернет, приведены в приложениях ниже к настоящему Протоколу.
+															
+															Формирование настоящего протокола окончено в {DateTime.UtcNow:HH:mm:ss dd-MM-yyyy} UTC.", font).SetMarginLeft(36).SetMarginRight(36).SetTextAlignment(TextAlignment.LEFT);
+
+        Paragraph p36 = CreateParagraph($@"Приложение 1 к автоматизированному Сервису для получения информации о веб-ресурсе", font).SetFontSize(8).SetTextAlignment(TextAlignment.RIGHT);
+        Paragraph p37 = CreateParagraph($@"Приложение 2 к автоматизированному Сервису для получения информации о веб-ресурсе", font).SetFontSize(8).SetTextAlignment(TextAlignment.RIGHT);
+        Paragraph p38 = CreateParagraph($@"Приложение 3 к автоматизированному Сервису для получения информации о веб-ресурсе", font).SetFontSize(8).SetTextAlignment(TextAlignment.RIGHT);
+        Paragraph p39 = CreateParagraph($@"Приложение 4 к автоматизированному Сервису для получения информации о веб-ресурсе", font).SetFontSize(8).SetTextAlignment(TextAlignment.RIGHT);
+
+        doc.GetPdfDocument().AddEventHandler(PdfDocumentEvent.END_PAGE, new PageEventHandler());
+
+        _ = doc.Add(p7);
+        _ = doc.Add(p8);
+        _ = doc.Add(p9);
+        _ = doc.Add(p10);
+        _ = doc.Add(p11);
+        _ = doc.Add(p12);
+        _ = doc.Add(p13);
+        _ = doc.Add(p14);
+        _ = doc.Add(p16);
+        _ = doc.Add(p17);
+        _ = doc.Add(p18);
+        _ = doc.Add(p19);
+        _ = doc.Add(p20);
+        _ = doc.Add(p21);
+        _ = doc.Add(p22);
+        _ = doc.Add(p23);
+        _ = doc.Add(p24);
+        _ = doc.Add(p25);
+        _ = doc.Add(p26);
+        _ = doc.Add(p27);
+        _ = doc.Add(p28);
+        _ = doc.Add(p29);
+        _ = doc.Add(p30);
+        _ = doc.Add(p31);
+        _ = doc.Add(p32);
+        _ = doc.Add(p33);
+        _ = doc.Add(p34);
+        _ = doc.Add(p35);
+        _ = doc.Add(new AreaBreak(AreaBreakType.NEXT_PAGE));
+        _ = doc.Add(p36);
+        _ = doc.Add(p1);
+        _ = doc.Add(new AreaBreak(AreaBreakType.NEXT_PAGE));
+        _ = doc.Add(p37);
+        _ = doc.Add(p2);
+        _ = doc.Add(p3);
+        _ = doc.Add(new AreaBreak(AreaBreakType.NEXT_PAGE));
+        _ = doc.Add(p38);
+        _ = doc.Add(p5);
+        _ = doc.Add(new AreaBreak(AreaBreakType.NEXT_PAGE));
+        _ = doc.Add(p39);
+        _ = doc.Add(p6);
+        _ = doc.Add(new AreaBreak(AreaBreakType.NEXT_PAGE));
+        _ = doc.Add(p4);
 
         // Новый метод - растягиваем страницу до размеров скриншота
         pdf.SetDefaultPageSize(new(img.GetImageWidth(), img.GetImageHeight()));
@@ -51,6 +138,23 @@ internal static class Utilities
 
         _ = doc.Add(img);
         doc.Close();
+    }
+
+    private sealed class PageEventHandler : IEventHandler
+    {
+        public void HandleEvent (Event @event)
+        {
+            PdfDocumentEvent docEvent = (PdfDocumentEvent) @event;
+            PdfDocument pdfDoc = docEvent.GetDocument();
+            PdfPage page = docEvent.GetPage();
+            int pageNumber = pdfDoc.GetPageNumber(page);
+            PdfCanvas canvas = new(page);
+            _ = canvas.BeginText().SetFontAndSize(PdfFontFactory.CreateFont(StandardFonts.TIMES_ROMAN), 12)
+                .MoveText(page.GetPageSize().GetWidth() / 2, 20)
+                .ShowText("Страница " + pageNumber)
+                .EndText()
+                .Stroke();
+        }
     }
 
     internal static Paragraph CreateParagraph (string message, PdfFont font)
@@ -99,6 +203,7 @@ internal static class Utilities
 
     internal static async Task<byte []> TakeScreenshot (Uri website, string pdfPathScreen)
     {
+
         BrowserFetcher browserFetcher = new();
         _ = await browserFetcher.DownloadAsync().ConfigureAwait(false);
 
@@ -112,6 +217,7 @@ internal static class Utilities
         using IPage page = await browser.NewPageAsync().ConfigureAwait(false);
 
         _ = await page.GoToAsync(website.AbsoluteUri).ConfigureAwait(false);
+        _ = await page.EvaluateExpressionHandleAsync("document.fonts.ready").ConfigureAwait(false);
 
         // Делаем настоящий скриншот
         byte [] imageBytes = await page.ScreenshotDataAsync(new ScreenshotOptions()
@@ -120,15 +226,64 @@ internal static class Utilities
             CaptureBeyondViewport = true,
         }).ConfigureAwait(false);
 
-        // Преобразование веб-страницы в pdf
-        await page.PdfAsync(pdfPathScreen, new PdfOptions()
+        int widthInPixels = 794;
+        int heightInPixels = 1050;
+
+        // Преобразование веб-страницы в PDF
+        int startPageNumber = 5; // Начальное значение номера страницы
+
+        PdfOptions pdfOptions = new()
         {
+            MarginOptions = new PuppeteerSharp.Media.MarginOptions() { Bottom = "36px", Left = "72px", Right = "72px", Top = "36px" },
             DisplayHeaderFooter = true,
-            Landscape = true,
+            Landscape = false,
             Outline = true,
             PrintBackground = true,
             OmitBackground = false,
-        }).ConfigureAwait(false);
+            HeaderTemplate = $@"
+							<style>
+								.header {{
+									font-family: Times New Roman;
+									font-size: 12px;
+									color: #333;
+									width: 100%;
+									text-align: right;
+									margin-right: 36px;
+								}}
+							</style>
+							<script>
+								var startPageNumber = {startPageNumber}; // Начальное значение номера страницы
+								function updatePageNumber() {{
+									var pageNumberElement = document.querySelector('.pageNumber');
+									if (pageNumberElement) {{
+										pageNumberElement.textContent = startPageNumber + window.pageYOffset / window.innerHeight;
+									}}
+								}}
+								window.addEventListener('DOMContentLoaded', function () {{
+									updatePageNumber();
+									window.addEventListener('scroll', updatePageNumber);
+								}});
+
+								// Добавляем обработчик события для изменения номера страницы при переходе на новую страницу
+								window.addEventListener('hashchange', function() {{
+									startPageNumber++; // Увеличиваем значение номера страницы на каждой новой странице
+									updatePageNumber(); // Обновляем номер страницы
+								}});
+							</script>
+							<div class='header'>
+								Приложение <span class='pageNumber'>{startPageNumber}</span> к автоматизированному Сервису для получения информации о веб-ресурсе
+							</div>",
+            FooterTemplate = @"
+							<div style='font-family: Times New Roman; font-size: 12px; margin-left: 10px; text-align: center;'>
+								Страница <span class='pageNumber'></span> из <span class='totalPages'></span> приложений с содержимым веб-страницы
+							</div>",
+            Width = widthInPixels,
+            Height = heightInPixels
+        };
+
+        await page.PdfAsync(pdfPathScreen, pdfOptions).ConfigureAwait(false);
+
+        // Увеличиваем переменную pageNumber на 10 для следующей страницы
 
         await browser.CloseAsync().ConfigureAwait(false);
 

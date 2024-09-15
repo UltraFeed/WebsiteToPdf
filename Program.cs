@@ -6,28 +6,26 @@ internal sealed class Program
 {
     internal static async Task Main ()
     {
-        bool debug = false;
         Uri? website;
         while (true)
         {
-            if (debug)
+#if DEBUG
+            website = new("https://ru.wikipedia.org/wiki/C_Sharp");
+            break;
+#endif
+
+#pragma warning disable CS0162
+            Console.Write($"Введите URL:");
+#pragma warning restore CS0162
+            string? uriString = Console.ReadLine();
+            if (Uri.TryCreate(uriString, UriKind.Absolute, out website))
             {
-                website = new("https://ru.wikipedia.org/wiki/C_Sharp");
+                Console.WriteLine($"URL успешно создан: {website}");
                 break;
             }
             else
             {
-                Console.Write($"Введите URL:");
-                string? uriString = Console.ReadLine();
-                if (Uri.TryCreate(uriString, UriKind.Absolute, out website))
-                {
-                    Console.WriteLine($"URL успешно создан: {website}");
-                    break;
-                }
-                else
-                {
-                    Console.WriteLine($"Ошибка: Введенная строка не является допустимым URL");
-                }
+                Console.WriteLine($"Ошибка: Введенная строка не является допустимым URL");
             }
         }
 
