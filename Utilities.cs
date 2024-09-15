@@ -131,7 +131,7 @@ internal static class Utilities
         _ = doc.Add(p4);
 
         // Новый метод - растягиваем страницу до размеров скриншота
-        pdf.SetDefaultPageSize(new(img.GetImageWidth(), img.GetImageHeight()));
+        //pdf.SetDefaultPageSize(new(img.GetImageWidth(), img.GetImageHeight()));
 
         // Старый метод - весь скриншот ужимается до размеров страницы
         //img.ScaleToFit(pdf.GetDefaultPageSize().GetWidth(), pdf.GetDefaultPageSize().GetHeight());
@@ -211,7 +211,6 @@ internal static class Utilities
         {
             Headless = true,
             DefaultViewport = null,
-
         }).ConfigureAwait(false);
 
         using IPage page = await browser.NewPageAsync().ConfigureAwait(false);
