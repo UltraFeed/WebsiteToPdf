@@ -32,7 +32,7 @@
   <ItemGroup>
     <PackageReference Include="itext" Version="8.0.5" />
     <PackageReference Include="itext.bouncy-castle-adapter" Version="8.0.5" />
-    <PackageReference Include="PuppeteerSharp" Version="20.0.0" />
+    <PackageReference Include="PuppeteerSharp" Version="20.0.2" />
     <PackageReference Include="System.Management" Version="8.0.0" />
   </ItemGroup>
 
