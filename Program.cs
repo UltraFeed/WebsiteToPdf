@@ -1,4 +1,4 @@
-﻿#pragma warning disable CA1303
+#pragma warning disable CA1303
 
 namespace WebsiteToPdf;
 
