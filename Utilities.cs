@@ -1,4 +1,4 @@
-#pragma warning disable CA1305
+﻿#pragma warning disable CA1305
 #pragma warning disable CA2000
 #pragma warning disable CS8604
 
@@ -10,10 +10,10 @@ using System.Reflection;
 using System.Text;
 using iText.IO.Font.Constants;
 using iText.IO.Image;
-using iText.Kernel.Events;
 using iText.Kernel.Font;
 using iText.Kernel.Pdf;
 using iText.Kernel.Pdf.Canvas;
+using iText.Kernel.Pdf.Event;
 using iText.Kernel.Utils;
 using iText.Layout;
 using iText.Layout.Element;
@@ -39,29 +39,29 @@ internal static class Utilities
 		Paragraph p4 = CreateParagraph($"Скриншот сайта: {website.IdnHost}", font);
 		Paragraph p5 = CreateParagraph(await GetWhoisResponseAsync(website, "whois.iana.org").ConfigureAwait(false), font);
 		Paragraph p6 = CreateParagraph(await TraceRouteAsync(website).ConfigureAwait(false), font);
-		Paragraph p7 = CreateParagraph($@"ПРОТОКОЛ №1 от {DateTime.UtcNow:HH:mm:ss dd-MM-yyyy} UTC автоматизированного осмотра информации в сети Интернет", font).SetBold().SetTextAlignment(TextAlignment.CENTER).SetMarginTop(36).SetMarginLeft(72).SetMarginRight(72);
+		Paragraph p7 = CreateParagraph($@"ПРОТОКОЛ №1 от {DateTime.UtcNow:HH:mm:ss dd-MM-yyyy} UTC автоматизированного осмотра информации в сети Интернет", font).SimulateBold().SetTextAlignment(TextAlignment.CENTER).SetMarginTop(36).SetMarginLeft(72).SetMarginRight(72);
 		Paragraph p8 = CreateParagraph("Автоматизированной системой была произведена фиксация следующей информации в сети Интернет:", font).SetMarginLeft(36).SetMarginRight(36).SetTextAlignment(TextAlignment.LEFT);
 		Paragraph p9 = CreateParagraph($@"Страница в сети интернет расположенная по адресу: {website}", font).SetMarginLeft(36).SetMarginRight(36).SetTextAlignment(TextAlignment.LEFT);
 		Paragraph p10 = CreateParagraph($@"Сведения о лице, инициировавшем осмотр: IP адрес {await GetExternalIpAddress().ConfigureAwait(false)}", font).SetMarginLeft(36).SetMarginRight(36).SetTextAlignment(TextAlignment.LEFT);
-		Paragraph p11 = CreateParagraph($@"Задачи осмотра:", font).SetMarginLeft(36).SetMarginRight(36).SetTextAlignment(TextAlignment.LEFT).SetBold();
+		Paragraph p11 = CreateParagraph($@"Задачи осмотра:", font).SetMarginLeft(36).SetMarginRight(36).SetTextAlignment(TextAlignment.LEFT).SimulateBold();
 		Paragraph p12 = CreateParagraph($@"- Зафиксировать информацию, размещенную по адресу: {website}", font).SetMarginLeft(36).SetMarginRight(36).SetTextAlignment(TextAlignment.LEFT).SetFirstLineIndent(20);
-		Paragraph p13 = CreateParagraph($@"Оборудование и используемое программное обеспечение:", font).SetMarginLeft(36).SetMarginRight(36).SetTextAlignment(TextAlignment.LEFT).SetBold();
+		Paragraph p13 = CreateParagraph($@"Оборудование и используемое программное обеспечение:", font).SetMarginLeft(36).SetMarginRight(36).SetTextAlignment(TextAlignment.LEFT).SimulateBold();
 		Paragraph p14 = CreateParagraph($@"- Программный комплекс по фиксации информации в сети Интернет", font).SetMarginLeft(36).SetMarginRight(36).SetTextAlignment(TextAlignment.LEFT).SetFirstLineIndent(20);
 		Paragraph p16 = CreateParagraph($@"- Локальный сервер под управлением Windows;", font).SetMarginLeft(36).SetMarginRight(36).SetTextAlignment(TextAlignment.LEFT).SetFirstLineIndent(20);
-		Paragraph p17 = CreateParagraph($@"Методика проверки корректности осмотра:", font).SetMarginLeft(36).SetMarginRight(36).SetTextAlignment(TextAlignment.LEFT).SetBold();
+		Paragraph p17 = CreateParagraph($@"Методика проверки корректности осмотра:", font).SetMarginLeft(36).SetMarginRight(36).SetTextAlignment(TextAlignment.LEFT).SimulateBold();
 		Paragraph p18 = CreateParagraph($@"- В запросе пользователя был приведен Интернет-адрес (адреса) в общепринятой нотации, также известной как «URL» (universal resource locator – универсальный указатель ресурса);", font).SetMarginLeft(36).SetMarginRight(36).SetTextAlignment(TextAlignment.LEFT).SetFirstLineIndent(20);
 		Paragraph p19 = CreateParagraph($@"Адрес состоит из указателя на используемый протокол (http: или https:), разделителя (//) и доменного имени. Веб-страница или файл, имеющие такой адрес (URL), должны быть доступны для любого пользователя, имеющего доступ к сети Интернет, по его запросу через клиент (браузер), поддерживающий протокол HTTP за исключением случаев необходимости ввода пароля для получения доступа к соответствующим страницам.", font).SetMarginLeft(36).SetMarginRight(36).SetTextAlignment(TextAlignment.LEFT);
-		Paragraph p20 = CreateParagraph($@"Для достижения полной уверенности в корректности результата осмотра необходимо соблюдение нескольких дополнительных условий. Необходимо удостовериться, что:", font).SetMarginLeft(36).SetMarginRight(36).SetTextAlignment(TextAlignment.LEFT).SetBold();
+		Paragraph p20 = CreateParagraph($@"Для достижения полной уверенности в корректности результата осмотра необходимо соблюдение нескольких дополнительных условий. Необходимо удостовериться, что:", font).SetMarginLeft(36).SetMarginRight(36).SetTextAlignment(TextAlignment.LEFT).SimulateBold();
 		Paragraph p21 = CreateParagraph($@"- корректно работает служба DNS (domain name system - англ. «система доменных имен»);", font).SetMarginLeft(36).SetMarginRight(36).SetTextAlignment(TextAlignment.LEFT).SetFirstLineIndent(20);
 		Paragraph p22 = CreateParagraph($@"- компьютер (сервер), при помощи которого производится осмотр, всё время имеет связь с сетью Интернет, передаваемая и получаемая информация не искажается и не подменяется намеренно кем-либо;", font).SetMarginLeft(36).SetMarginRight(36).SetTextAlignment(TextAlignment.LEFT).SetFirstLineIndent(20);
 		Paragraph p23 = CreateParagraph($@"- информация получается непосредственно из сети Интернет, а не из кэша (временного буферного хранилища), что могло бы привести к неактуальности полученной информации;", font).SetMarginLeft(36).SetMarginRight(36).SetTextAlignment(TextAlignment.LEFT).SetFirstLineIndent(20);
 		Paragraph p24 = CreateParagraph($@"- вся отображаемая информация возвращается именно осматриваемым сайтом, а не каким-либо другим.", font).SetMarginLeft(36).SetMarginRight(36).SetTextAlignment(TextAlignment.LEFT).SetFirstLineIndent(20);
-		Paragraph p25 = CreateParagraph($@"Вышеперечисленные условия корректности перед началом осмотра сайта были автоматически проверены Системой следующим образом:", font).SetMarginLeft(36).SetMarginRight(36).SetTextAlignment(TextAlignment.LEFT).SetBold();
+		Paragraph p25 = CreateParagraph($@"Вышеперечисленные условия корректности перед началом осмотра сайта были автоматически проверены Системой следующим образом:", font).SetMarginLeft(36).SetMarginRight(36).SetTextAlignment(TextAlignment.LEFT).SimulateBold();
 		Paragraph p26 = CreateParagraph($@"- был произведен запрос системы DNS без кэширования результата;", font).SetMarginLeft(36).SetMarginRight(36).SetTextAlignment(TextAlignment.LEFT).SetFirstLineIndent(20);
 		Paragraph p27 = CreateParagraph($@"- было использовано оборудование, программное обеспечение и линии связи, которые управляются независимыми, незаинтересованными субъектами и о которых не могла заранее знать сторона, заинтересованная в исходе фиксирования информации;", font).SetMarginLeft(36).SetMarginRight(36).SetTextAlignment(TextAlignment.LEFT).SetFirstLineIndent(20);
 		Paragraph p28 = CreateParagraph($@"- специалистами технической поддержки в ходе планового технического обследования Системы выявлены и отключены кэширующие устройства (программы), которые могут привести к тому, что вместо актуальной версии страницы будет зафиксирована более ранняя, сохранённая в кэше (временном буферном хранилище) версия этой страницы;", font).SetMarginLeft(36).SetMarginRight(36).SetTextAlignment(TextAlignment.LEFT).SetFirstLineIndent(20);
 		Paragraph p29 = CreateParagraph($@"- Системой установлено, что все условия корректности при фиксации информации в сети Интернет, соблюдены. Признаков некорректности работы используемых элементов или признаков подмены данных не обнаружено.", font).SetMarginLeft(36).SetMarginRight(36).SetTextAlignment(TextAlignment.LEFT).SetFirstLineIndent(20);
-		Paragraph p30 = CreateParagraph($@"Непосредственно перед получением изображений осматриваемой страницы Системой были произведены следующие действия:", font).SetMarginLeft(36).SetMarginRight(36).SetTextAlignment(TextAlignment.LEFT).SetBold();
+		Paragraph p30 = CreateParagraph($@"Непосредственно перед получением изображений осматриваемой страницы Системой были произведены следующие действия:", font).SetMarginLeft(36).SetMarginRight(36).SetTextAlignment(TextAlignment.LEFT).SimulateBold();
 		Paragraph p31 = CreateParagraph($@"1. Произведена проверка того, что системное время сервера синхронизировано с точным временем по протоколу NTP.
 																				NTP (англ. Network Time Protocol — протокол сетевого времени) — сетевой протокол для получения сведений о точном времени и синхронизации с ним внутренних часов компьютерных систем.", font).SetMarginLeft(36).SetMarginRight(36).SetTextAlignment(TextAlignment.LEFT).SetFirstLineIndent(20);
 		Paragraph p32 = CreateParagraph($@"2. Произведен запрос WHOIS-сервиса в отношении следующих доменных имен: {website}
@@ -140,9 +140,9 @@ internal static class Utilities
 		doc.Close();
 	}
 
-	private sealed class PageEventHandler : IEventHandler
+	private sealed class PageEventHandler : AbstractPdfDocumentEventHandler
 	{
-		public void HandleEvent (Event @event)
+		protected override void OnAcceptedEvent (AbstractPdfDocumentEvent @event)
 		{
 			PdfDocumentEvent docEvent = (PdfDocumentEvent) @event;
 			PdfDocument pdfDoc = docEvent.GetDocument();
