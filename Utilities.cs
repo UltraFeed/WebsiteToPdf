@@ -28,8 +28,7 @@ internal static class Utilities
 		byte [] imageBytes = await TakeScreenshot(website, pdfPathScreen).ConfigureAwait(false);
 		Image img = new(ImageDataFactory.Create(imageBytes));
 
-		using PdfDocument pdf = new(new PdfWriter(new FileStream(pdfPathText, FileMode.Create), new WriterProperties().SetPdfVersion(PdfVersion.PDF_2_0).UseSmartMode()));
-		using Document doc = new(pdf);
+		using Document doc = new(new PdfDocument(new PdfWriter(new FileStream(pdfPathText, FileMode.Create), new WriterProperties().SetPdfVersion(PdfVersion.PDF_2_0).UseSmartMode())));
 		string fontPath = "WebsiteToPdf.resources.FreeSans.ttf";
 		PdfFont font = GetFont(fontPath);
 
