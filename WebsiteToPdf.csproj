@@ -27,6 +27,6 @@
 		<PackageReference Include="itext" Version="9.0.0" />
 		<PackageReference Include="itext.bouncy-castle-adapter" Version="9.0.0" />
 		<PackageReference Include="PuppeteerSharp" Version="20.0.5" />
-		<PackageReference Include="System.Management" Version="9.0.0" />
+		<PackageReference Include="System.Management" Version="9.0.1" />
 	</ItemGroup>
 </Project>
